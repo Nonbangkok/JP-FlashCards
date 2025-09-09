@@ -38,7 +38,7 @@ A comprehensive Japanese character learning application built with React and Typ
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Nonbangkok/JP-FlashCards.git
    cd JP-Learning-Zone
    ```
 
