@@ -92,12 +92,12 @@ const FlashCard: React.FC<FlashCardProps> = ({
         onClick={!isFlipped ? onFlip : undefined}
       >
         <div className="flash-card-inner">
-          <div className={`flash-card-front bg-white dark:bg-dark-card ${
+          <div className={`flash-card-front flex items-center justify-center bg-white dark:bg-dark-card ${
             answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
           }`}>
             {renderFront()}
           </div>
-          <div className={`flash-card-back bg-white dark:bg-dark-card ${
+          <div className={`flash-card-back flex items-center justify-center bg-white dark:bg-dark-card ${
             answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
           }`}>
             {renderBack()}
@@ -119,21 +119,18 @@ const FlashCard: React.FC<FlashCardProps> = ({
       {showAnswer && !isAlreadyAnswered && (
         <div className="mt-6">
           <div className="text-center mb-4">
-            <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-              Did you get it right?
-            </p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => handleAnswer(false)}
                 className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
-                ❌ No
+                No
               </button>
               <button
                 onClick={() => handleAnswer(true)}
                 className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
               >
-                ✅ Yes
+                Yes
               </button>
             </div>
           </div>
