@@ -25,25 +25,29 @@ export const useStudySession = () => {
     setAnswered(new Array(sessionCharacters.length).fill(false));
   }, []);
 
+  const changeCard = useCallback((newIndex: number) => {
+    // Hide the answer and flip back before changing the character
+    setShowAnswer(false);
+    setIsFlipped(false);
+
+    // Wait for the flip animation to complete before changing the card content
+    setTimeout(() => {
+      setCurrentIndex(newIndex);
+      setCurrentCharacter(studyCharacters[newIndex]);
+    }, 150); // This duration should match the CSS transition time
+  }, [studyCharacters]);
+
   const nextCard = useCallback(() => {
     if (currentIndex < studyCharacters.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
-      setCurrentCharacter(studyCharacters[nextIndex]);
-      setIsFlipped(false);
-      setShowAnswer(false);
+      changeCard(currentIndex + 1);
     }
-  }, [currentIndex, studyCharacters]);
+  }, [currentIndex, studyCharacters, changeCard]);
 
   const previousCard = useCallback(() => {
     if (currentIndex > 0) {
-      const prevIndex = currentIndex - 1;
-      setCurrentIndex(prevIndex);
-      setCurrentCharacter(studyCharacters[prevIndex]);
-      setIsFlipped(false);
-      setShowAnswer(false);
+      changeCard(currentIndex - 1);
     }
-  }, [currentIndex, studyCharacters]);
+  }, [currentIndex, changeCard]);
 
   const flipCard = useCallback(() => {
     if (!isFlipped) {
@@ -67,6 +71,7 @@ export const useStudySession = () => {
     setCurrentCharacter(shuffled[0] || null);
     setIsFlipped(false);
     setShowAnswer(false);
+    setAnswered(new Array(shuffled.length).fill(false));
   }, [studyCharacters]);
 
   const resetSession = useCallback(() => {
