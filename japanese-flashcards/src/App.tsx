@@ -332,7 +332,7 @@ function App() {
               </div>
 
               {/* Flash Card */}
-              <div className="flex justify-center">
+              <div className="flex justify-center items-center py-12">
                 <FlashCard
                   character={currentCharacter}
                   mode={mode}
