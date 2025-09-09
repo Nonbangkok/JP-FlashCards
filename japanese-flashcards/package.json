@@ -2,6 +2,7 @@
   "name": "japanese-flashcards",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.8.0",
@@ -43,8 +44,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
+    "ajv": "^8.17.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.13"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   }
 }
