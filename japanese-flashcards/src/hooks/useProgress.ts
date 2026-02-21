@@ -14,11 +14,17 @@ export const useProgress = () => {
     if (savedProgress) {
       try {
         const parsed = JSON.parse(savedProgress);
-        // Convert date strings back to Date objects
-        Object.values(parsed).forEach((p: any) => {
-          p.lastReviewed = new Date(p.lastReviewed);
+        // Convert date strings back to Date objects and validate basic structure
+        const validatedProgress: Record<string, Progress> = {};
+        Object.entries(parsed).forEach(([id, p]: [string, any]) => {
+          if (p && typeof p === 'object' && p.characterId) {
+            validatedProgress[id] = {
+              ...p,
+              lastReviewed: new Date(p.lastReviewed || Date.now())
+            };
+          }
         });
-        setProgress(parsed);
+        setProgress(validatedProgress);
         console.log('Progress loaded from localStorage:', Object.keys(parsed).length, 'characters');
       } catch (error) {
         console.error('Error loading progress:', error);
