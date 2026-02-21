@@ -6,19 +6,16 @@ import { useStudySession } from './hooks/useStudySession';
 import FlashCard from './components/FlashCard';
 import CharacterSelector from './components/CharacterSelector';
 import ProgressStats from './components/ProgressStats';
-import { 
-  saveSessionData, 
-  loadSessionData, 
-  clearSessionData, 
-  hasValidSessionData,
+import {
+  saveSessionData,
+  loadSessionData,
+  clearSessionData,
   saveModeData,
   loadModeData,
   clearModeData,
-  hasValidModeData,
   saveThemeData,
   loadThemeData,
   clearThemeData,
-  hasValidThemeData,
   clearAllData
 } from './utils/localStorage';
 import './App.css';
@@ -32,7 +29,7 @@ function App() {
   const [hasLoadedMode, setHasLoadedMode] = useState(false);
   const [hasLoadedTheme, setHasLoadedTheme] = useState(false);
 
-  const { progress, updateProgress, getMasteredCharacters, getWeakCharacters, resetProgress, isLoaded } = useProgress();
+  const { progress, updateProgress, resetProgress, isLoaded } = useProgress();
   const {
     currentCharacter,
     currentIndex,
@@ -57,7 +54,7 @@ function App() {
     const savedSession = loadSessionData();
     const savedMode = loadModeData();
     const savedTheme = loadThemeData();
-    
+
     if (savedSession) {
       setSelectedCharacters(savedSession.selectedCharacters);
       setStudyMode(savedSession.studyMode);
@@ -69,7 +66,7 @@ function App() {
     } else {
       setHasLoadedSession(true);
     }
-    
+
     if (savedMode) {
       setStudyMode(savedMode);
       setHasLoadedMode(true);
@@ -77,7 +74,7 @@ function App() {
     } else {
       setHasLoadedMode(true);
     }
-    
+
     if (savedTheme !== null) {
       setDarkMode(savedTheme);
       setHasLoadedTheme(true);
@@ -121,7 +118,7 @@ function App() {
     if (currentCharacter && !isCurrentCardAnswered) {
       updateProgress(currentCharacter.id, isCorrect);
       markAsAnswered();
-      
+
       // Auto-advance to the next card after a short delay
       setTimeout(() => {
         if (hasNext) {
@@ -131,7 +128,7 @@ function App() {
           alert("Study session complete!");
           handleBackToHome();
         }
-      }, 0); // 0ms delay to see feedback
+      }, 150); // 150ms delay to see feedback (green/red border)
     }
   };
 
@@ -171,9 +168,8 @@ function App() {
   // Show loading state while data is being loaded
   if (!isLoaded || !hasLoadedSession || !hasLoadedMode || !hasLoadedTheme) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${
-        darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
-      }`}>
+      <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
+        }`}>
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center min-h-screen">
             <div className="text-center">
@@ -191,9 +187,8 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
-    }`}>
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
+      }`}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="mb-8">
@@ -223,21 +218,19 @@ function App() {
           <div className="flex gap-4">
             <button
               onClick={() => setCurrentView('home')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                currentView === 'home'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-colors ${currentView === 'home'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
             >
               Home
             </button>
             <button
               onClick={() => setCurrentView('progress')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                currentView === 'progress'
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-colors ${currentView === 'progress'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                }`}
             >
               Progress
             </button>
@@ -256,21 +249,19 @@ function App() {
                 <div className="flex gap-4">
                   <button
                     onClick={() => setStudyMode('character-to-sound')}
-                    className={`px-6 py-3 rounded-lg transition-colors ${
-                      studyMode === 'character-to-sound'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                    }`}
+                    className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'character-to-sound'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
                   >
                     Character → Pronunciation
                   </button>
                   <button
                     onClick={() => setStudyMode('sound-to-character')}
-                    className={`px-6 py-3 rounded-lg transition-colors ${
-                      studyMode === 'sound-to-character'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                    }`}
+                    className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'sound-to-character'
+                      ? 'bg-primary text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
                   >
                     Pronunciation → Character
                   </button>
@@ -346,7 +337,7 @@ function App() {
 
               {/* Progress Bar */}
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div 
+                <div
                   className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
                 />
@@ -357,7 +348,7 @@ function App() {
           {currentView === 'progress' && (
             <div className="space-y-8">
               <ProgressStats characters={allCharacters} progress={progress} />
-              
+
               <div className="text-center space-y-2">
                 <button
                   onClick={handleResetProgress}
