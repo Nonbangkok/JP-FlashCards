@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Character, StudyMode } from '../types';
 
 interface FlashCardProps {
@@ -87,24 +88,38 @@ const FlashCard: React.FC<FlashCardProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div 
-        className={`flash-card ${isFlipped ? 'flipped' : ''}`}
-        onClick={!isFlipped ? onFlip : undefined}
-      >
-        <div className="flash-card-inner">
-          <div className={`flash-card-front flex items-center justify-center bg-white dark:bg-dark-card ${
-            answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
-          }`}>
-            {renderFront()}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={character.id}
+          // initial={{ opacity: 0, scale: 1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          // exit={{ opacity: 0, scale: 1 }}
+          transition={{ type: "spring", damping: 25, stiffness: 500 }}
+          className="flash-card-container"
+        >
+          <div
+            className={`flash-card cursor-pointer`}
+            onClick={!isFlipped ? onFlip : undefined}
+          >
+            <motion.div
+              className="flash-card-inner"
+              animate={{ rotateY: isFlipped ? 180 : 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 450 }}
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <div className={`flash-card-front flex items-center justify-center bg-white dark:bg-dark-card ${answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
+                }`}>
+                {renderFront()}
+              </div>
+              <div className={`flash-card-back flex items-center justify-center bg-white dark:bg-dark-card ${answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
+                }`}>
+                {renderBack()}
+              </div>
+            </motion.div>
           </div>
-          <div className={`flash-card-back flex items-center justify-center bg-white dark:bg-dark-card ${
-            answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
-          }`}>
-            {renderBack()}
-          </div>
-        </div>
-      </div>
-      
+        </motion.div>
+      </AnimatePresence>
+
       {!isFlipped && (
         <div className="mt-6 text-center">
           <button

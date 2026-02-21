@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Character, CharacterType, DifficultyLevel } from '../types';
 
 interface CharacterSelectorProps {
@@ -19,8 +20,8 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   const filteredCharacters = characters.filter(char => {
     const matchesType = filterType === 'all' || char.type === filterType;
     const matchesLevel = filterLevel === 'all' || char.level === filterLevel;
-    const matchesSearch = searchTerm === '' || 
-      char.character.includes(searchTerm) || 
+    const matchesSearch = searchTerm === '' ||
+      char.character.includes(searchTerm) ||
       char.romaji.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (char.meaning && char.meaning.includes(searchTerm));
     
@@ -41,7 +42,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   };
 
   const deselectAll = () => {
-    onSelectionChange(selectedCharacters.filter(char => 
+    onSelectionChange(selectedCharacters.filter(char =>
       !filteredCharacters.some(fc => fc.id === char.id)
     ));
   };
@@ -69,41 +70,37 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                filterType === 'all' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm ${filterType === 'all'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
             >
               All ({characters.length})
             </button>
             <button
               onClick={() => setFilterType('hiragana')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                filterType === 'hiragana' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm ${filterType === 'hiragana'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
             >
               Hiragana ({getTypeCount('hiragana')})
             </button>
             <button
               onClick={() => setFilterType('katakana')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                filterType === 'katakana' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm ${filterType === 'katakana'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
             >
               Katakana ({getTypeCount('katakana')})
             </button>
             <button
               onClick={() => setFilterType('kanji')}
-              className={`px-4 py-2 rounded-full text-sm ${
-                filterType === 'kanji' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm ${filterType === 'kanji'
+                ? 'bg-primary text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
             >
               Kanji ({getTypeCount('kanji')})
             </button>
@@ -118,11 +115,10 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilterLevel('all')}
-                className={`px-4 py-2 rounded-full text-sm ${
-                  filterLevel === 'all' 
-                    ? 'bg-primary text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm ${filterLevel === 'all'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
               >
                 All
               </button>
@@ -130,13 +126,12 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 <button
                   key={level}
                   onClick={() => setFilterLevel(level as DifficultyLevel)}
-                  className={`px-4 py-2 rounded-full text-sm ${
-                    filterLevel === level 
-                      ? 'bg-primary text-white' 
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
+                  className={`px-4 py-2 rounded-full text-sm ${filterLevel === level
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
                 >
-                  N{6-level} ({getLevelCount(level as DifficultyLevel)})
+                  N{6 - level} ({getLevelCount(level as DifficultyLevel)})
                 </button>
               ))}
             </div>
@@ -174,25 +169,47 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       </div>
 
       {/* Character grid */}
-      <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-96 overflow-y-auto">
-        {filteredCharacters.map(character => {
-          const isSelected = selectedCharacters.some(c => c.id === character.id);
-          return (
-            <button
-              key={character.id}
-              onClick={() => toggleCharacter(character)}
-              className={`p-3 rounded-lg text-center transition-colors ${
-                isSelected
+      <motion.div
+        layout
+        className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-96 overflow-y-auto"
+      >
+        <AnimatePresence>
+          {filteredCharacters.map((character, index) => {
+            const isSelected = selectedCharacters.some(c => c.id === character.id);
+            return (
+              <motion.button
+                layout
+                key={character.id}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{
+                  duration: 0.15,
+                  delay: Math.min(index * 0.005, 0.1) // Faster staggered delay
+                }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => toggleCharacter(character)}
+                className={`p-3 rounded-lg text-center transition-colors relative ${isSelected
                   ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <div className="text-lg font-medium">{character.character}</div>
-              <div className="text-xs opacity-75">{character.romaji}</div>
-            </button>
-          );
-        })}
-      </div>
+                  }`}
+              >
+                <div className="text-lg font-medium">{character.character}</div>
+                <div className="text-xs opacity-75">{character.romaji}</div>
+                {isSelected && (
+                  <motion.div
+                    layoutId="outline"
+                    className="absolute inset-0 border-2 border-primary-dark rounded-lg"
+                    initial={false}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </AnimatePresence>
+      </motion.div>
 
       <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         Selected: {selectedCharacters.length} characters

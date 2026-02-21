@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Character, Progress } from '../types';
 
 interface ProgressStatsProps {
@@ -43,7 +44,11 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
   };
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-8"
+    >
       {/* Main Stats */}
       <div className="bg-white dark:bg-dark-card rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-bold text-primary-color mb-4">
@@ -111,9 +116,11 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
                   </span>
                   <div className="flex items-center gap-2">
                     <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${percentage}%` }}
+                      <motion.div
+                        className="bg-primary h-2 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                       />
                     </div>
                     <span className="text-sm text-gray-600 dark:text-gray-400 w-12 text-right">
@@ -157,10 +164,9 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
                   return (
                     <div
                       key={character.id}
-                      className={`p-2 rounded-lg text-center text-sm transition-all duration-200 ${
-                        isMastered
-                          ? 'bg-green-100 dark:bg-green-900 text-black border-2 border-green-300 dark:border-green-700'
-                          : hasAttempts
+                      className={`p-2 rounded-lg text-center text-sm transition-all duration-200 ${isMastered
+                        ? 'bg-green-100 dark:bg-green-900 text-black border-2 border-green-300 dark:border-green-700'
+                        : hasAttempts
                           ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-700'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600'
                       }`}
@@ -176,7 +182,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

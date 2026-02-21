@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Character, StudyMode } from './types';
 import { allCharacters } from './data/characters';
 import { useProgress } from './hooks/useProgress';
@@ -239,144 +240,167 @@ function App() {
 
         {/* Main Content */}
         <main>
-          {currentView === 'home' && (
-            <div className="space-y-8">
-              {/* Study Mode Selection */}
-              <div className="bg-white dark:bg-dark-card rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-bold text-primary-color mb-4">
-                  Choose Study Mode
-                </h2>
-                <div className="flex gap-4">
+          <AnimatePresence mode="wait">
+            {currentView === 'home' && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                {/* Study Mode Selection */}
+                <div className="bg-white dark:bg-dark-card rounded-lg shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-primary-color mb-4">
+                    Choose Study Mode
+                  </h2>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setStudyMode('character-to-sound')}
+                      className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'character-to-sound'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                    >
+                      Character → Pronunciation
+                    </button>
+                    <button
+                      onClick={() => setStudyMode('sound-to-character')}
+                      className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'sound-to-character'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                    >
+                      Pronunciation → Character
+                    </button>
+                  </div>
+                </div>
+
+                {/* Character Selection */}
+                <CharacterSelector
+                  characters={allCharacters}
+                  selectedCharacters={selectedCharacters}
+                  onSelectionChange={setSelectedCharacters}
+                />
+
+                {/* Start Study Button */}
+                <div className="text-center">
                   <button
-                    onClick={() => setStudyMode('character-to-sound')}
-                    className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'character-to-sound'
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                      }`}
+                    onClick={handleStartStudy}
+                    disabled={selectedCharacters.length === 0}
+                    className="px-8 py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Character → Pronunciation
-                  </button>
-                  <button
-                    onClick={() => setStudyMode('sound-to-character')}
-                    className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'sound-to-character'
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                      }`}
-                  >
-                    Pronunciation → Character
+                    Start Studying ({selectedCharacters.length} characters)
                   </button>
                 </div>
-              </div>
+              </motion.div>
+            )}
 
-              {/* Character Selection */}
-              <CharacterSelector
-                characters={allCharacters}
-                selectedCharacters={selectedCharacters}
-                onSelectionChange={setSelectedCharacters}
-              />
-
-              {/* Start Study Button */}
-              <div className="text-center">
-                <button
-                  onClick={handleStartStudy}
-                  disabled={selectedCharacters.length === 0}
-                  className="px-8 py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Start Studying ({selectedCharacters.length} characters)
-                </button>
-              </div>
-            </div>
-          )}
-
-          {currentView === 'study' && currentCharacter && (
-            <div className="space-y-8">
-              {/* Study Controls */}
-              <div className="flex justify-between items-center">
-                <button
-                  onClick={handleBackToHome}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  ← Back to Home
-                </button>
-                <div className="flex gap-2">
+            {currentView === 'study' && currentCharacter && (
+              <motion.div
+                key="study"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                {/* Study Controls */}
+                <div className="flex justify-between items-center">
                   <button
-                    onClick={shuffleCards}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    onClick={handleBackToHome}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
                   >
-                    Shuffle
+                    ← Back to Home
+                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={shuffleCards}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                      Shuffle
+                    </button>
+                    <button
+                      onClick={previousCard}
+                      disabled={!hasPrevious}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      onClick={nextCard}
+                      disabled={!hasNext}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+
+                {/* Flash Card */}
+                <div className="flex justify-center items-center py-12">
+                  <FlashCard
+                    character={currentCharacter}
+                    mode={mode}
+                    isFlipped={isFlipped}
+                    showAnswer={showAnswer}
+                    isAlreadyAnswered={isCurrentCardAnswered}
+                    onFlip={flipCard}
+                    onAnswer={handleAnswer}
+                  />
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {currentView === 'progress' && (
+              <motion.div
+                key="progress"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <ProgressStats characters={allCharacters} progress={progress} />
+
+                <div className="text-center space-y-2">
+                  <button
+                    onClick={handleResetProgress}
+                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors mr-2"
+                  >
+                    Reset All Progress
                   </button>
                   <button
-                    onClick={previousCard}
-                    disabled={!hasPrevious}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleClearSession}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
                   >
-                    ← Previous
+                    Clear Saved Session
                   </button>
                   <button
-                    onClick={nextCard}
-                    disabled={!hasNext}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleClearMode}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
                   >
-                    Next →
+                    Clear Saved Mode
+                  </button>
+                  <button
+                    onClick={handleClearTheme}
+                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Clear Saved Theme
                   </button>
                 </div>
-              </div>
-
-              {/* Flash Card */}
-              <div className="flex justify-center items-center py-12">
-                <FlashCard
-                  character={currentCharacter}
-                  mode={mode}
-                  isFlipped={isFlipped}
-                  showAnswer={showAnswer}
-                  isAlreadyAnswered={isCurrentCardAnswered}
-                  onFlip={flipCard}
-                  onAnswer={handleAnswer}
-                />
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {currentView === 'progress' && (
-            <div className="space-y-8">
-              <ProgressStats characters={allCharacters} progress={progress} />
-
-              <div className="text-center space-y-2">
-                <button
-                  onClick={handleResetProgress}
-                  className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors mr-2"
-                >
-                  Reset All Progress
-                </button>
-                <button
-                  onClick={handleClearSession}
-                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
-                >
-                  Clear Saved Session
-                </button>
-                <button
-                  onClick={handleClearMode}
-                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
-                >
-                  Clear Saved Mode
-                </button>
-                <button
-                  onClick={handleClearTheme}
-                  className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                >
-                  Clear Saved Theme
-                </button>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </div>
