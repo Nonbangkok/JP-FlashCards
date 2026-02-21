@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Character, StudyMode } from '../types';
+
+export const TRANSITION_DURATION = 150; // ms
 
 export const useStudySession = () => {
   const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
@@ -34,7 +36,7 @@ export const useStudySession = () => {
     setTimeout(() => {
       setCurrentIndex(newIndex);
       setCurrentCharacter(studyCharacters[newIndex]);
-    }, 150); // This duration should match the CSS transition time
+    }, TRANSITION_DURATION);
   }, [studyCharacters]);
 
   const nextCard = useCallback(() => {
