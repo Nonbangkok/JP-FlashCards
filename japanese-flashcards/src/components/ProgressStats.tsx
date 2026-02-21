@@ -54,7 +54,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
         <h3 className="text-xl font-bold text-primary-color mb-4">
           Progress Statistics
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-primary-color">{masteredCount}</div>
@@ -108,7 +108,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
               const typeCharacters = characters.filter(c => c.type === type);
               const typeMastered = typeCharacters.filter(char => getCharacterProgress(char.id).mastered).length;
               const percentage = typeCharacters.length > 0 ? (typeMastered / typeCharacters.length) * 100 : 0;
-              
+
               return (
                 <div key={type} className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
@@ -139,11 +139,11 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
         <h3 className="text-xl font-bold text-primary-color mb-4">
           Character Overview
         </h3>
-        
+
         {['hiragana', 'katakana', 'kanji'].map(type => {
           const typeCharacters = getCharactersByType(type as 'hiragana' | 'katakana' | 'kanji');
           const typeMastered = typeCharacters.filter(char => getCharacterProgress(char.id).mastered).length;
-          
+
           return (
             <div key={type} className="mb-6">
               <div className="flex items-center justify-between mb-3">
@@ -154,13 +154,13 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
                   {typeMastered}/{typeCharacters.length} mastered
                 </span>
               </div>
-              
+
               <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-16 gap-2">
                 {typeCharacters.map(character => {
                   const charProgress = getCharacterProgress(character.id);
                   const isMastered = charProgress.mastered;
                   const hasAttempts = charProgress.correct > 0 || charProgress.incorrect > 0;
-                  
+
                   return (
                     <div
                       key={character.id}
@@ -169,7 +169,7 @@ const ProgressStats: React.FC<ProgressStatsProps> = ({ characters, progress }) =
                         : hasAttempts
                           ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-700'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600'
-                      }`}
+                        }`}
                       title={`${character.character} (${character.romaji}) - ${isMastered ? 'Mastered' : hasAttempts ? 'In Progress' : 'Not Started'}`}
                     >
                       <div className="font-medium text-lg">{character.character}</div>

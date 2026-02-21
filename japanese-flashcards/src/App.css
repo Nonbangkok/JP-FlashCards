@@ -687,19 +687,19 @@ body {
   .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  
+
   .md\:grid-cols-8 {
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
-  
+
   .md\:grid-cols-10 {
     grid-template-columns: repeat(10, minmax(0, 1fr));
   }
-  
+
   .md\:grid-cols-12 {
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
-  
+
   .md\:grid-cols-16 {
     grid-template-columns: repeat(16, minmax(0, 1fr));
   }
@@ -709,15 +709,15 @@ body {
   .sm\:grid-cols-8 {
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
-  
+
   .text-8xl {
     font-size: 4rem;
   }
-  
+
   .text-4xl {
     font-size: 2rem;
   }
-  
+
   .flash-card {
     height: 250px;
   }
@@ -727,7 +727,7 @@ body {
   .lg\:grid-cols-12 {
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
-  
+
   .lg\:grid-cols-16 {
     grid-template-columns: repeat(16, minmax(0, 1fr));
   }
@@ -833,6 +833,7 @@ input:focus {
   from {
     width: 0%;
   }
+
   to {
     width: var(--progress-width);
   }
@@ -844,9 +845,12 @@ input:focus {
 
 /* Loading animation */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }

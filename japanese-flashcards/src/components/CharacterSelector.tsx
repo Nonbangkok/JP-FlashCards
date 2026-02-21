@@ -24,7 +24,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       char.character.includes(searchTerm) ||
       char.romaji.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (char.meaning && char.meaning.includes(searchTerm));
-    
+
     return matchesType && matchesLevel && matchesSearch;
   });
 
@@ -60,7 +60,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       <h3 className="text-xl font-bold text-primary-color mb-4">
         Select Characters to Study
       </h3>
-      
+
       {/* Filters */}
       <div className="mb-6 space-y-4">
         <div>

@@ -30,7 +30,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
 
   const handleAnswer = (isCorrect: boolean) => {
     if (isAlreadyAnswered) return;
-    
+
     setAnswerResult(isCorrect ? 'correct' : 'incorrect');
     onAnswer(isCorrect);
   };
@@ -68,7 +68,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
 
   const renderBack = () => {
     const correctAnswer = mode === 'character-to-sound' ? character.romaji : character.character;
-    
+
     return (
       <div className="text-center">
         <div className="text-4xl font-bold text-primary mb-4">
@@ -130,7 +130,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
           </button>
         </div>
       )}
-      
+
       {showAnswer && !isAlreadyAnswered && (
         <div className="mt-6">
           <div className="text-center mb-4">
@@ -151,7 +151,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
           </div>
         </div>
       )}
-      
+
       {isAlreadyAnswered && (
         <div className="mt-6 text-center">
           <p className="text-gray-500 dark:text-gray-400">
