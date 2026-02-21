@@ -10,31 +10,29 @@ interface SavedSessionData {
 interface SavedModeData {
   studyMode: StudyMode;
   timestamp: number;
-  expiresAt: number;
 }
 
 interface SavedThemeData {
   darkMode: boolean;
   timestamp: number;
-  expiresAt: number;
 }
 
 const SESSION_KEY = 'japanese-flashcards-session';
 const MODE_KEY = 'japanese-flashcards-mode';
 const THEME_KEY = 'japanese-flashcards-theme';
-const EXPIRY_HOURS = 24;
+const EXPIRY_HOURS = 168; // 7 days
 
 export const saveSessionData = (selectedCharacters: Character[], studyMode: StudyMode) => {
   const now = Date.now();
   const expiresAt = now + (EXPIRY_HOURS * 60 * 60 * 1000); // 24 hours in milliseconds
-  
+
   const sessionData: SavedSessionData = {
     selectedCharacters,
     studyMode,
     timestamp: now,
     expiresAt
   };
-  
+
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
     console.log('Session data saved successfully');
@@ -47,17 +45,17 @@ export const loadSessionData = (): { selectedCharacters: Character[], studyMode:
   try {
     const savedData = localStorage.getItem(SESSION_KEY);
     if (!savedData) return null;
-    
+
     const sessionData: SavedSessionData = JSON.parse(savedData);
     const now = Date.now();
-    
+
     // Check if data has expired
     if (now > sessionData.expiresAt) {
       localStorage.removeItem(SESSION_KEY);
       console.log('Session data has expired and was removed');
       return null;
     }
-    
+
     console.log('Session data loaded successfully');
     return {
       selectedCharacters: sessionData.selectedCharacters,
@@ -71,14 +69,11 @@ export const loadSessionData = (): { selectedCharacters: Character[], studyMode:
 
 export const saveModeData = (studyMode: StudyMode) => {
   const now = Date.now();
-  const expiresAt = now + (EXPIRY_HOURS * 60 * 60 * 1000); // 24 hours in milliseconds
-  
   const modeData: SavedModeData = {
     studyMode,
     timestamp: now,
-    expiresAt
   };
-  
+
   try {
     localStorage.setItem(MODE_KEY, JSON.stringify(modeData));
     console.log('Mode data saved successfully');
@@ -91,17 +86,15 @@ export const loadModeData = (): StudyMode | null => {
   try {
     const savedData = localStorage.getItem(MODE_KEY);
     if (!savedData) return null;
-    
+
     const modeData: SavedModeData = JSON.parse(savedData);
-    const now = Date.now();
-    
-    // Check if data has expired
-    if (now > modeData.expiresAt) {
+
+    // Simple validation
+    if (typeof modeData.studyMode !== 'string') {
       localStorage.removeItem(MODE_KEY);
-      console.log('Mode data has expired and was removed');
       return null;
     }
-    
+
     console.log('Mode data loaded successfully');
     return modeData.studyMode;
   } catch (error) {
@@ -112,14 +105,11 @@ export const loadModeData = (): StudyMode | null => {
 
 export const saveThemeData = (darkMode: boolean) => {
   const now = Date.now();
-  const expiresAt = now + (EXPIRY_HOURS * 60 * 60 * 1000); // 24 hours in milliseconds
-  
   const themeData: SavedThemeData = {
     darkMode,
     timestamp: now,
-    expiresAt
   };
-  
+
   try {
     localStorage.setItem(THEME_KEY, JSON.stringify(themeData));
     console.log('Theme data saved successfully');
@@ -132,17 +122,15 @@ export const loadThemeData = (): boolean | null => {
   try {
     const savedData = localStorage.getItem(THEME_KEY);
     if (!savedData) return null;
-    
+
     const themeData: SavedThemeData = JSON.parse(savedData);
-    const now = Date.now();
-    
-    // Check if data has expired
-    if (now > themeData.expiresAt) {
+
+    // Simple validation
+    if (typeof themeData.darkMode !== 'boolean') {
       localStorage.removeItem(THEME_KEY);
-      console.log('Theme data has expired and was removed');
       return null;
     }
-    
+
     console.log('Theme data loaded successfully');
     return themeData.darkMode;
   } catch (error) {
