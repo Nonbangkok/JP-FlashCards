@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Character, StudyMode } from '../types';
 
-export const TRANSITION_DURATION = 150; // ms
+export const TRANSITION_DURATION = 100; // ms
 
 export const useStudySession = () => {
   const [currentCharacter, setCurrentCharacter] = useState<Character | null>(null);
@@ -67,14 +67,69 @@ export const useStudySession = () => {
   }, [currentIndex]);
 
   const shuffleCards = useCallback(() => {
-    const shuffled = [...studyCharacters].sort(() => Math.random() - 0.5);
-    setStudyCharacters(shuffled);
-    setCurrentIndex(0);
-    setCurrentCharacter(shuffled[0] || null);
+    if (studyCharacters.length <= 1) return;
+
+    // Shuffle from the current card to the end, keeping answered state with the character
+    const remainingChars = studyCharacters.slice(currentIndex);
+    const remainingAns = answered.slice(currentIndex);
+
+    if (remainingChars.length <= 1) return;
+
+    // Combine for tandem shuffle
+    const combined = remainingChars.map((char, i) => ({
+      char,
+      ans: remainingAns[i]
+    }));
+
+    const shuffled = [...combined].sort(() => Math.random() - 0.5);
+
+    const newStudyCharacters = [
+      ...studyCharacters.slice(0, currentIndex),
+      ...shuffled.map(item => item.char)
+    ];
+
+    const newAnswered = [
+      ...answered.slice(0, currentIndex),
+      ...shuffled.map(item => item.ans)
+    ];
+
+    setStudyCharacters(newStudyCharacters);
+    setAnswered(newAnswered);
+    setCurrentCharacter(shuffled[0].char);
     setIsFlipped(false);
     setShowAnswer(false);
-    setAnswered(new Array(shuffled.length).fill(false));
-  }, [studyCharacters]);
+  }, [studyCharacters, currentIndex, answered]);
+
+  const skipCard = useCallback(() => {
+    if (studyCharacters.length <= 1) return;
+
+    const current = studyCharacters[currentIndex];
+    const isAns = answered[currentIndex];
+
+    // Move current card to the end
+    const newStudyCharacters = [
+      ...studyCharacters.slice(0, currentIndex),
+      ...studyCharacters.slice(currentIndex + 1),
+      current
+    ];
+
+    // Update answered array as well
+    const newAnswered = [
+      ...answered.slice(0, currentIndex),
+      ...answered.slice(currentIndex + 1),
+      isAns
+    ];
+
+    setStudyCharacters(newStudyCharacters);
+    setAnswered(newAnswered);
+
+    // Stay at the same index, which now points to the "next" card
+    // unless we were at the very end (which shouldn't happen with hasNext check)
+    // but we need to update the currentCharacter
+    setCurrentCharacter(newStudyCharacters[currentIndex]);
+    setIsFlipped(false);
+    setShowAnswer(false);
+  }, [studyCharacters, currentIndex, answered]);
 
   const resetSession = useCallback(() => {
     setCurrentCharacter(null);
@@ -99,6 +154,7 @@ export const useStudySession = () => {
     flipCard,
     markAsAnswered,
     shuffleCards,
+    skipCard,
     resetSession,
     hasNext: currentIndex < studyCharacters.length - 1,
     hasPrevious: currentIndex > 0,

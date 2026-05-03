@@ -24,95 +24,80 @@ const FlashCard: React.FC<FlashCardProps> = ({
   const [answerResult, setAnswerResult] = useState<'correct' | 'incorrect' | null>(null);
 
   React.useEffect(() => {
-    // Reset feedback when card changes
     setAnswerResult(null);
   }, [character]);
 
   const handleAnswer = (isCorrect: boolean) => {
     if (isAlreadyAnswered) return;
-
     setAnswerResult(isCorrect ? 'correct' : 'incorrect');
     onAnswer(isCorrect);
   };
+
+  const resultClass = answerResult === 'correct' ? 'correct' : answerResult === 'incorrect' ? 'incorrect' : '';
 
   const renderFront = () => {
     if (mode === 'character-to-sound') {
       return (
         <div className="text-center">
-          <div className="text-8xl font-bold text-primary mb-4">
-            {character.character}
-          </div>
+          <div className="card-character">{character.character}</div>
           {character.type === 'kanji' && character.meaning && (
-            <div className="text-lg text-gray-600 dark:text-gray-300 mb-2">
-              {character.meaning}
-            </div>
+            <div className="card-meaning">{character.meaning}</div>
           )}
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {character.type.toUpperCase()}
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="text-center">
-          <div className="text-4xl font-bold text-primary mb-4">
-            {character.romaji}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {character.type.toUpperCase()}
-          </div>
+          <span className="card-type-badge">{character.type}</span>
         </div>
       );
     }
+    return (
+      <div className="text-center">
+        <div className="card-romaji">{character.romaji}</div>
+        <span className="card-type-badge">{character.type}</span>
+      </div>
+    );
   };
 
   const renderBack = () => {
-    const correctAnswer = mode === 'character-to-sound' ? character.romaji : character.character;
+    const answer = mode === 'character-to-sound' ? character.romaji : character.character;
+    const isCharAnswer = mode === 'sound-to-character';
 
     return (
       <div className="text-center">
-        <div className="text-4xl font-bold text-primary mb-4">
-          {correctAnswer}
+        <div className={isCharAnswer ? 'card-character' : 'card-romaji'} style={isCharAnswer ? { fontSize: '5rem' } : undefined}>
+          {answer}
         </div>
         {character.type === 'kanji' && character.meaning && (
-          <div className="text-lg text-gray-600 dark:text-gray-300 mb-2">
-            {character.meaning}
-          </div>
+          <div className="card-meaning">{character.meaning}</div>
         )}
-        <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          {character.type.toUpperCase()}
-        </div>
+        <span className="card-type-badge">{character.type}</span>
       </div>
     );
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full">
       <AnimatePresence mode="wait">
         <motion.div
           key={character.id}
-          // initial={{ opacity: 0, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
-          // exit={{ opacity: 0, scale: 1 }}
-          transition={{ type: "spring", damping: 25, stiffness: 500 }}
-          className="flash-card-container"
+          transition={{ type: 'spring', damping: 25, stiffness: 400 }}
         >
           <div
-            className={`flash-card cursor-pointer`}
+            className="flash-card"
             onClick={!isFlipped ? onFlip : undefined}
+            role="button"
+            tabIndex={0}
+            aria-label={isFlipped ? 'Card showing answer' : 'Click to reveal answer'}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!isFlipped) onFlip(); } }}
           >
             <motion.div
               className="flash-card-inner"
               animate={{ rotateY: isFlipped ? 180 : 0 }}
-              transition={{ type: "spring", damping: 30, stiffness: 450 }}
-              style={{ transformStyle: "preserve-3d" }}
+              transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+              style={{ transformStyle: 'preserve-3d' }}
             >
-              <div className={`flash-card-front flex items-center justify-center bg-white dark:bg-dark-card ${answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
-                }`}>
+              <div className={`flash-card-front ${resultClass}`}>
                 {renderFront()}
               </div>
-              <div className={`flash-card-back flex items-center justify-center bg-white dark:bg-dark-card ${answerResult === 'correct' ? 'border-2 border-green-500' : answerResult === 'incorrect' ? 'border-2 border-red-500' : ''
-                }`}>
+              <div className={`flash-card-back ${resultClass}`}>
                 {renderBack()}
               </div>
             </motion.div>
@@ -121,42 +106,53 @@ const FlashCard: React.FC<FlashCardProps> = ({
       </AnimatePresence>
 
       {!isFlipped && (
-        <div className="mt-6 text-center">
-          <button
+        <div className="flip-hint">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onFlip}
-            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            className="btn btn-primary btn-lg"
+            type="button"
           >
-            Show Answer
-          </button>
+            Reveal Answer
+          </motion.button>
         </div>
       )}
 
       {showAnswer && !isAlreadyAnswered && (
-        <div className="mt-6">
-          <div className="text-center mb-4">
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => handleAnswer(false)}
-                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                No
-              </button>
-              <button
-                onClick={() => handleAnswer(true)}
-                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-        </div>
+        <motion.div
+          className="answer-buttons"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => handleAnswer(false)}
+            className="answer-btn answer-btn-wrong"
+            type="button"
+            aria-label="Incorrect"
+          >
+            &#10007; Wrong
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => handleAnswer(true)}
+            className="answer-btn answer-btn-correct"
+            type="button"
+            aria-label="Correct"
+          >
+            &#10003; Correct
+          </motion.button>
+        </motion.div>
       )}
 
       {isAlreadyAnswered && (
-        <div className="mt-6 text-center">
-          <p className="text-gray-500 dark:text-gray-400">
-            Answered. Please proceed to the next card.
-          </p>
+        <div className="answered-label">
+          {answerResult === 'correct' ? 'Correct! ' : answerResult === 'incorrect' ? 'Keep practicing! ' : ''}
+          Moving to next card...
         </div>
       )}
     </div>

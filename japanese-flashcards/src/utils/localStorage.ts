@@ -20,6 +20,7 @@ interface SavedThemeData {
 const SESSION_KEY = 'japanese-flashcards-session';
 const MODE_KEY = 'japanese-flashcards-mode';
 const THEME_KEY = 'japanese-flashcards-theme';
+const COLOR_THEME_KEY = 'japanese-flashcards-color-theme';
 const EXPIRY_HOURS = 168; // 7 days
 
 export const saveSessionData = (selectedCharacters: Character[], studyMode: StudyMode) => {
@@ -185,4 +186,21 @@ export const hasValidModeData = (): boolean => {
 export const hasValidThemeData = (): boolean => {
   const data = loadThemeData();
   return data !== null;
+};
+
+export const saveColorTheme = (colorTheme: string) => {
+  try {
+    localStorage.setItem(COLOR_THEME_KEY, colorTheme);
+  } catch (error) {
+    console.error('Failed to save color theme:', error);
+  }
+};
+
+export const loadColorTheme = (): string | null => {
+  try {
+    return localStorage.getItem(COLOR_THEME_KEY);
+  } catch (error) {
+    console.error('Failed to load color theme:', error);
+    return null;
+  }
 };

@@ -7,6 +7,7 @@ import { useStudySession } from './hooks/useStudySession';
 import FlashCard from './components/FlashCard';
 import CharacterSelector from './components/CharacterSelector';
 import ProgressStats from './components/ProgressStats';
+import Logo from './components/Logo';
 import {
   saveSessionData,
   loadSessionData,
@@ -17,18 +18,45 @@ import {
   saveThemeData,
   loadThemeData,
   clearThemeData,
-  clearAllData
+  clearAllData,
+  saveColorTheme,
+  loadColorTheme,
 } from './utils/localStorage';
 import './App.css';
+
+type ColorTheme = 'red' | 'blue' | 'green' | 'purple' | 'orange' | 'teal';
+
+const COLOR_THEMES: { id: ColorTheme; label: string }[] = [
+  { id: 'red', label: 'Red' },
+  { id: 'blue', label: 'Blue' },
+  { id: 'green', label: 'Green' },
+  { id: 'purple', label: 'Purple' },
+  { id: 'orange', label: 'Orange' },
+  { id: 'teal', label: 'Teal' },
+];
+
+const pageVariants = {
+  enter: { opacity: 0, y: 16 },
+  center: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -12 },
+};
+
+const pageTransition = {
+  type: 'tween' as const,
+  ease: [0.4, 0, 0.2, 1] as const,
+  duration: 0.25,
+};
 
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'study' | 'progress'>('home');
   const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([]);
   const [studyMode, setStudyMode] = useState<StudyMode>('character-to-sound');
   const [darkMode, setDarkMode] = useState(false);
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('red');
   const [hasLoadedSession, setHasLoadedSession] = useState(false);
   const [hasLoadedMode, setHasLoadedMode] = useState(false);
   const [hasLoadedTheme, setHasLoadedTheme] = useState(false);
+  const [showSessionComplete, setShowSessionComplete] = useState(false);
 
   const { progress, updateProgress, resetProgress, isLoaded } = useProgress();
   const {
@@ -48,9 +76,9 @@ function App() {
     totalCards,
     isCurrentCardAnswered,
     markAsAnswered,
+    skipCard,
   } = useStudySession();
 
-  // Load saved data on app start
   useEffect(() => {
     const savedSession = loadSessionData();
     const savedMode = loadModeData();
@@ -59,58 +87,57 @@ function App() {
     if (savedSession) {
       setSelectedCharacters(savedSession.selectedCharacters);
       setStudyMode(savedSession.studyMode);
-      setHasLoadedSession(true);
-      console.log('Loaded saved session:', {
-        characters: savedSession.selectedCharacters.length,
-        mode: savedSession.studyMode
-      });
-    } else {
-      setHasLoadedSession(true);
     }
+    setHasLoadedSession(true);
 
     if (savedMode) {
       setStudyMode(savedMode);
-      setHasLoadedMode(true);
-      console.log('Loaded saved mode:', savedMode);
-    } else {
-      setHasLoadedMode(true);
     }
+    setHasLoadedMode(true);
 
     if (savedTheme !== null) {
       setDarkMode(savedTheme);
-      setHasLoadedTheme(true);
-      console.log('Loaded saved theme:', savedTheme ? 'dark' : 'light');
-    } else {
-      setHasLoadedTheme(true);
+    }
+    setHasLoadedTheme(true);
+
+    const savedColorTheme = loadColorTheme();
+    if (savedColorTheme) {
+      setColorTheme(savedColorTheme as ColorTheme);
     }
   }, []);
 
-  // Save session data when characters change
   useEffect(() => {
     if (hasLoadedSession && selectedCharacters.length > 0) {
       saveSessionData(selectedCharacters, studyMode);
     }
   }, [selectedCharacters, studyMode, hasLoadedSession]);
 
-  // Save mode data when mode changes
   useEffect(() => {
     if (hasLoadedMode) {
       saveModeData(studyMode);
     }
   }, [studyMode, hasLoadedMode]);
 
-  // Save theme data when theme changes
   useEffect(() => {
     if (hasLoadedTheme) {
       saveThemeData(darkMode);
     }
   }, [darkMode, hasLoadedTheme]);
 
+  const handleColorThemeChange = (theme: ColorTheme) => {
+    setColorTheme(theme);
+    saveColorTheme(theme);
+  };
+
+  const getShellClassName = () => {
+    const classes = ['app-shell'];
+    if (darkMode) classes.push('dark');
+    if (colorTheme !== 'red') classes.push(`theme-${colorTheme}`);
+    return classes.join(' ');
+  };
+
   const handleStartStudy = () => {
-    if (selectedCharacters.length === 0) {
-      alert('Please select characters to study');
-      return;
-    }
+    if (selectedCharacters.length === 0) return;
     startSession(selectedCharacters, studyMode);
     setCurrentView('study');
   };
@@ -120,21 +147,19 @@ function App() {
       updateProgress(currentCharacter.id, isCorrect);
       markAsAnswered();
 
-      // Auto-advance to the next card after a short delay
       setTimeout(() => {
         if (hasNext) {
           nextCard();
         } else {
-          // Optional: handle session completion
-          alert("Study session complete!");
-          handleBackToHome();
+          setShowSessionComplete(true);
         }
-      }, 150); // 150ms delay to see feedback (green/red border)
+      }, 150);
     }
   };
 
   const handleBackToHome = () => {
     resetSession();
+    setShowSessionComplete(false);
     setCurrentView('home');
   };
 
@@ -146,97 +171,97 @@ function App() {
   };
 
   const handleClearSession = () => {
-    if (window.confirm('Are you sure you want to clear saved session data?')) {
+    if (window.confirm('Clear saved session data?')) {
       clearSessionData();
       setSelectedCharacters([]);
     }
   };
 
   const handleClearMode = () => {
-    if (window.confirm('Are you sure you want to clear saved mode data?')) {
+    if (window.confirm('Clear saved mode preference?')) {
       clearModeData();
       setStudyMode('character-to-sound');
     }
   };
 
   const handleClearTheme = () => {
-    if (window.confirm('Are you sure you want to clear saved theme data?')) {
+    if (window.confirm('Clear saved theme preference?')) {
       clearThemeData();
       setDarkMode(false);
     }
   };
 
-  // Show loading state while data is being loaded
   if (!isLoaded || !hasLoadedSession || !hasLoadedMode || !hasLoadedTheme) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
-        }`}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-screen">
-            <div className="text-center">
-              <div className="animate-pulse text-2xl font-bold text-primary-color mb-4">
-                🎌 Japanese Character Learning
-              </div>
-              <div className="text-gray-600 dark:text-gray-400">
-                Loading your settings...
-              </div>
-            </div>
-          </div>
+      <div className={getShellClassName()}>
+        <div className="loading-screen">
+          <Logo size={64} className="loading-logo" />
+          <div className="loading-text">Japanese Learning Zone</div>
+          <div className="loading-subtext">Loading your progress...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-dark-bg' : 'bg-gray-50'
-      }`}>
-      <div className="container mx-auto px-4 py-8">
+    <div className={getShellClassName()}>
+      <div className="app-container">
         {/* Header */}
-        <header className="mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-primary-color">
-              Japanese Flashcards
-            </h1>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </button>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {currentView === 'study' && currentCharacter && (
-                  <span>{currentIndex + 1} / {totalCards}</span>
-                )}
-              </div>
+        <header className="app-header">
+          <div className="app-brand" onClick={() => setCurrentView('home')} style={{ cursor: 'pointer' }}>
+            <Logo size={40} className="app-logo" />
+            <div>
+              <div className="app-title">Japanese Learning Zone</div>
+              <div className="app-title-jp">日本語を学ぼう</div>
             </div>
+          </div>
+          <div className="header-actions">
+            {currentView === 'study' && currentCharacter && (
+              <span className="card-counter">{currentIndex + 1} / {totalCards}</span>
+            )}
+            <div className="theme-picker">
+              {COLOR_THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => handleColorThemeChange(t.id)}
+                  className={`theme-swatch theme-swatch-${t.id} ${colorTheme === t.id ? 'active' : ''}`}
+                  aria-label={`${t.label} theme`}
+                  title={t.label}
+                  type="button"
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="theme-toggle"
+              aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+            >
+              {darkMode ? '\u2600' : '\u263E'}
+            </button>
           </div>
         </header>
 
         {/* Navigation */}
-        <nav className="mb-8">
-          <div className="flex gap-4">
+        {currentView !== 'study' && (
+          <nav className="app-nav" role="tablist">
             <button
+              role="tab"
+              aria-selected={currentView === 'home'}
               onClick={() => setCurrentView('home')}
-              className={`px-4 py-2 rounded-lg transition-colors ${currentView === 'home'
-                ? 'bg-primary text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
+              className={`nav-tab ${currentView === 'home' ? 'active' : ''}`}
             >
               Home
             </button>
             <button
+              role="tab"
+              aria-selected={currentView === 'progress'}
               onClick={() => setCurrentView('progress')}
-              className={`px-4 py-2 rounded-lg transition-colors ${currentView === 'progress'
-                ? 'bg-primary text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
+              className={`nav-tab ${currentView === 'progress' ? 'active' : ''}`}
             >
               Progress
             </button>
-          </div>
-        </nav>
+          </nav>
+        )}
 
         {/* Main Content */}
         <main>
@@ -244,35 +269,38 @@ function App() {
             {currentView === 'home' && (
               <motion.div
                 key="home"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={pageTransition}
+                className="stack-lg"
               >
                 {/* Study Mode Selection */}
-                <div className="bg-white dark:bg-dark-card rounded-lg shadow-lg p-6">
-                  <h2 className="text-xl font-bold text-primary-color mb-4">
-                    Choose Study Mode
-                  </h2>
-                  <div className="flex gap-4">
+                <div className="card">
+                  <div className="card-title">Study Mode</div>
+                  <div className="flex-row gap-3 flex-wrap">
                     <button
                       onClick={() => setStudyMode('character-to-sound')}
-                      className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'character-to-sound'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        }`}
+                      className={`mode-card ${studyMode === 'character-to-sound' ? 'selected' : ''}`}
+                      type="button"
                     >
-                      Character → Pronunciation
+                      <span className="mode-card-icon" aria-hidden="true">&#23383;</span>
+                      <span className="mode-card-text">
+                        <span className="mode-card-label">Character &rarr; Sound</span>
+                        <span className="mode-card-desc">See character, recall pronunciation</span>
+                      </span>
                     </button>
                     <button
                       onClick={() => setStudyMode('sound-to-character')}
-                      className={`px-6 py-3 rounded-lg transition-colors ${studyMode === 'sound-to-character'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        }`}
+                      className={`mode-card ${studyMode === 'sound-to-character' ? 'selected' : ''}`}
+                      type="button"
                     >
-                      Pronunciation → Character
+                      <span className="mode-card-icon" aria-hidden="true">&#127911;</span>
+                      <span className="mode-card-text">
+                        <span className="mode-card-label">Sound &rarr; Character</span>
+                        <span className="mode-card-desc">See pronunciation, recall character</span>
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -285,14 +313,16 @@ function App() {
                 />
 
                 {/* Start Study Button */}
-                <div className="text-center">
-                  <button
+                <div className="start-section">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleStartStudy}
                     disabled={selectedCharacters.length === 0}
-                    className="px-8 py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn btn-primary btn-lg"
                   >
-                    Start Studying ({selectedCharacters.length} characters)
-                  </button>
+                    Start Studying <span className="start-btn-count">({selectedCharacters.length} characters)</span>
+                  </motion.button>
                 </div>
               </motion.div>
             )}
@@ -300,61 +330,69 @@ function App() {
             {currentView === 'study' && currentCharacter && (
               <motion.div
                 key="study"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={pageTransition}
+                className="stack-lg"
               >
                 {/* Study Controls */}
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={handleBackToHome}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    ← Back to Home
+                <div className="study-controls">
+                  <button onClick={handleBackToHome} className="btn btn-ghost" type="button">
+                    &larr; Back
                   </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={shuffleCards}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                    >
+                  <div className="study-controls-group">
+                    <button onClick={shuffleCards} className="btn btn-secondary" type="button">
                       Shuffle
                     </button>
                     <button
                       onClick={previousCard}
                       disabled={!hasPrevious}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn btn-secondary"
+                      type="button"
                     >
-                      ← Previous
+                      &larr; Prev
                     </button>
                     <button
                       onClick={nextCard}
                       disabled={!hasNext}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn btn-secondary"
+                      type="button"
                     >
-                      Next →
+                      Next &rarr;
+                    </button>
+                    <button
+                      onClick={skipCard}
+                      disabled={!hasNext}
+                      className="btn btn-secondary"
+                      type="button"
+                      title="Move this card to the end of the deck"
+                    >
+                      Skip
                     </button>
                   </div>
                 </div>
 
                 {/* Flash Card */}
-                <div className="flex justify-center items-center py-12">
-                  <FlashCard
-                    character={currentCharacter}
-                    mode={mode}
-                    isFlipped={isFlipped}
-                    showAnswer={showAnswer}
-                    isAlreadyAnswered={isCurrentCardAnswered}
-                    onFlip={flipCard}
-                    onAnswer={handleAnswer}
-                  />
+                <div className="study-flashcard-area">
+                  <div className="flashcard-wrapper">
+                    <FlashCard
+                      character={currentCharacter}
+                      mode={mode}
+                      isFlipped={isFlipped}
+                      showAnswer={showAnswer}
+                      isAlreadyAnswered={isCurrentCardAnswered}
+                      onFlip={flipCard}
+                      onAnswer={handleAnswer}
+                    />
+                  </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="progress-track">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    className="progress-fill"
                     style={{ width: `${((currentIndex + 1) / totalCards) * 100}%` }}
                   />
                 </div>
@@ -364,38 +402,27 @@ function App() {
             {currentView === 'progress' && (
               <motion.div
                 key="progress"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-8"
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={pageTransition}
+                className="stack-lg"
               >
                 <ProgressStats characters={allCharacters} progress={progress} />
 
-                <div className="text-center space-y-2">
-                  <button
-                    onClick={handleResetProgress}
-                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors mr-2"
-                  >
+                <div className="data-management">
+                  <button onClick={handleResetProgress} className="btn btn-danger" type="button">
                     Reset All Progress
                   </button>
-                  <button
-                    onClick={handleClearSession}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
-                  >
-                    Clear Saved Session
+                  <button onClick={handleClearSession} className="btn btn-secondary" type="button">
+                    Clear Session
                   </button>
-                  <button
-                    onClick={handleClearMode}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors mr-2"
-                  >
-                    Clear Saved Mode
+                  <button onClick={handleClearMode} className="btn btn-secondary" type="button">
+                    Clear Mode
                   </button>
-                  <button
-                    onClick={handleClearTheme}
-                    className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    Clear Saved Theme
+                  <button onClick={handleClearTheme} className="btn btn-secondary" type="button">
+                    Clear Theme
                   </button>
                 </div>
               </motion.div>
@@ -403,6 +430,37 @@ function App() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Session Complete Overlay */}
+      <AnimatePresence>
+        {showSessionComplete && (
+          <motion.div
+            className="session-complete-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleBackToHome}
+          >
+            <motion.div
+              className="session-complete-card"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="session-complete-icon" aria-hidden="true">&#127881;</div>
+              <div className="session-complete-title">Session Complete!</div>
+              <div className="session-complete-desc">
+                Great work! You've reviewed all {totalCards} cards in this session.
+              </div>
+              <button onClick={handleBackToHome} className="btn btn-primary btn-lg" type="button">
+                Back to Home
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
